@@ -19,6 +19,8 @@ polygonal in the adjusted plane generating a 2D polygon (eventually not simple).
 
 A set of test cases for polyHolePartition.scad
 
+![polyHolePartition_Tests](screenshots/polyHolePartition_Tests_1.PNG)
+
 ## [sweep_polyHole.scad](sweep_polyHole.scad)
 
 An application example of polyHolePartition: the sweep of a 2d shape which is a polygon with holes.
