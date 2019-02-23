@@ -17,7 +17,7 @@ polygonal in the adjusted plane generating a 2D polygon (eventually not simple).
 
 ## [polyHolePartition_Tests.scad](polyHolePartition_Tests.scad)
 
-A set of test cases of polyHolePartition.scad
+A set of test cases for polyHolePartition.scad
 
 ## [sweep_polyHole.scad](sweep_polyHole.scad)
 
