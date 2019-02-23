@@ -27,4 +27,4 @@ A set of test cases for polyHolePartition.scad
 
 An application example of polyHolePartition: the sweep of a 2d shape which is a polygon with holes.
 
-![sweep_polyHole](sweep_polyHoles_1.PNG.PNG)
+![sweep_polyHole](sweep_polyHoles_1.PNG)
