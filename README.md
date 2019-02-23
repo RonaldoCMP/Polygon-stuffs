@@ -19,7 +19,7 @@ polygonal in the adjusted plane generating a 2D polygon (eventually not simple).
 
 A set of test cases for polyHolePartition.scad
 
-![polyHolePartition_Tests](screenshots/polyHolePartition_Tests_1.PNG)
+![polyHolePartition_Tests](polyHolePartition_Tests_1.PNG)
 ![polyHolePartition_Tests](screenshots/polyHolePartition_Tests_2.PNG)
 ![polyHolePartition_Tests](screenshots/polyHolePartition_Tests_3.PNG)
 
