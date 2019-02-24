@@ -21,7 +21,7 @@ begCap   = tranfPdata(tpath[0], holedFacePDat) ;
 endCap   = tranfPdata(tpath[lpath-1], holedFacePDat, inv=true) ;
 // join evething in one polyhedron
 difference() {
-  lazzyUnion([souter,begCap,endCap, shole0, shole1, shole2]);
+  lazyUnion([souter,begCap,endCap, shole0, shole1, shole2]);
   translate([-160,50,0]) cube([60,60,150]);
 }
 
