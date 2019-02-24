@@ -103,7 +103,7 @@ function polyHolePartition(outer, mH, pdata=false) =
       )
   ! pdata ?
      // just the polygons with original data
-    [for(pl=polys)[for(p=pl) vtx(p) ] ] : 
+    [for(pl=polys)[for(p=pl) p[0] ] ] : 
     // polyhedron data output
     let( cyc   = concat(mH,[outer]),
          acc   = accum_sum([0, for(pi=cyc) len(pi) ]) )
