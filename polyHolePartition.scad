@@ -69,8 +69,9 @@
 * by David Eberly. His method converts a polygon expressed by one outer 
 * border and a list of internal hole borders in one polygon expressed
 * by just one border by introducing two-way bridges connecting
-* those borders. The resulting polygon is good enough for calling OpenSCAD polygon()
-* but it does not fit the requirements for rendering a linear_extrude of it.
+* those borders. The resulting polygon is good enough for calling OpenSCAD 
+* polygon() and to be linear_extruded but it does not fit the requirements 
+* for rendering a face the polyhedron primitive.
 */
     
 // Implementation
