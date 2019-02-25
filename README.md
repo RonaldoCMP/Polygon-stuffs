@@ -1,6 +1,14 @@
 # Polygon-stuffs
 A small bunch of functions to deal with polygons
 
+## [polyHoles.scad](polyHoles.scad)
+This function converts a polygon expressed by one outer border
+and a list of internal hole borders in one polygon expressed
+by just one border by introducing two-way bridges connecting
+those borders. The output list will be a proper concatenation
+of subsequences of the incoming borders and will contain all the
+incoming vertices. 
+
 ## [polyHolePartition.scad](polyHolePartition.scad)
 
 This function generates a partition of a polygon with holes such that
