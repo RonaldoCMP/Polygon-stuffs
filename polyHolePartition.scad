@@ -7,24 +7,16 @@
         len(res) == len(l) ?
             res :
             accum_sum(l, offs+l[len(res)], concat(res, [ offs+l[len(res)] ] ));
-    // comparison quicksort
-    function cqsort(a,c="asc") =
+    // quicksort
+    function qsort(a,k=0) =
       len(a)<=1 ? a:
+      let( s = k<0? -1: 1, // k<0 => descending
+           k = floor(k) )
       let( a0 = a[floor(len(a)/2)],
-           l  = [for(ai=a) if(compare(ai,a0,c) <  0) ai],
-           e  = [for(ai=a) if(compare(ai,a0,c) == 0) ai],
-           g  = [for(ai=a) if(compare(ai,a0,c) >  0) ai] )
-      concat(cqsort(l,c),e,cqsort(g,c));
-    // comparison function example for cqsort
-    // may be overloaded by application
-    function compare(a0, a1, c) =
-      c=="asc"?  len(a0)==undef ? a0-a1 : a0[0]-a1[0] :
-      c=="desc"? len(a0)==undef ? a1-a0 : a1[0]-a0[0] :
-      c=="lex"?  a0[0]-a1[0]==0? a0[1]-a1[1] : a0[0]-a1[0] : // lexicographic
-      c==floor(c) && c>=0 && len(a0)>=0 ? a0[c]-a1[c] :      // by key ascendent
-      c==floor(c) && c<0  && len(a0)>=0 ? a1[-c]-a0[-c] :    // by key descendent
-      undef;
-
+           l  = [for(ai=a) if(s*(ai[abs(k)]-a0[abs(k)]) <  0) ai],
+           e  = [for(ai=a) if(s*(ai[abs(k)]-a0[abs(k)]) == 0) ai],
+           g  = [for(ai=a) if(s*(ai[abs(k)]-a0[abs(k)]) >  0) ai] )
+      concat(qsort(l,k),e,qsort(g,k));
 
 //  -----------------
 //  polyHolePartition
@@ -189,41 +181,34 @@ function _polyHoleComplex(outer, mH, extrem=undef, n=0, brdgs=[]) =
 // the vertex right extreme for each hole descendent sorted by x values
 function extremes(l) =
   let( xvals = [for(i=[0:len(l)-1]) [for(j=[0:len(l[i])-1]) vtx(l[i][j]).x ] ] )
-  cqsort( [for(i=[0:len(l)-1]) 
-              let( k=index_max(xvals[i]) ) 
-              [i, k, vtx(l[i][k]).x] ],-2);
-      
+  qsort( [for(i=[0:len(l)-1], k=[index_max(xvals[i])] )
+              [i, k, l[i][k].x] ],-2); 
+              
 // find a bridge between the point pt (in the interior of poly outer) and
 // outer return the index of a vertex in outer where the bridge ends
-function bridge2pt(pt, outer) =
+function bridge2pt(pt, outer) = // ****
   let( proj = project(pt, outer), // horizontal projection of pt on outer
+       err  = assert(proj!=undef, "Error: check input polygon restrictions"),
        ind  = proj[0],            // outer edge index of projection point
        crxp = proj[1],            // projection point
        in1  = (ind+1)%len(outer) )
-  crxp == vtx(outer[ind]) ? 
-    ind :
-  crxp == vtx(outer[in1]) ?
-    in1 :
-    // outer may intercept the segment joining pt to vtx(outer[ind]) 
-    // or vtx(outer[in1])
-    let( cand = (vtx(outer[ind]).x > pt.x && 
-                   norm(crxp - vtx(outer[in1]))
-                     >1e-6*norm(vtx(outer[ind])-vtx(outer[in1])))
-                 || (vtx(outer[in1]).x <= pt.x ) ?
-                 // candidates: vertices of outer which are inside
-                 // the triangle [ pt, outer[ind], crxp ]
-                 [ ind, 
-                   for(i=[0:len(outer)-1]) 
-                    if( vtx(outer[i]).y < pt.y   
-                        && inTri(vtx(outer[ind]), pt, vtx(outer[i]), crxp) )
-                      i ]:
-                // candidates: vertices of outer which are inside
-                // the triangle [ pt, crxp, outer[ind+1] ]
-                [ (ind+1)%len(outer),
-                   for(i=[0:len(outer)-1]) 
-                    if( vtx(outer[i]).y > pt.y
-                        && inTri(vtx(outer[i]), pt, vtx(outer[in1]), crxp) )
-                     i ],
+  // outer may intercept the segment joining pt to vtx(outer[ind]) 
+  // or vtx(outer[in1])
+  let( cand = (vtx(outer[ind]).x > pt.x) || (vtx(outer[in1]).x <= pt.x ) ?
+               // candidates: vertices of outer which are inside
+               // the triangle [ pt, outer[ind], crxp ]
+               [ ind, 
+                 for(i=[0:len(outer)-1]) 
+                  if( vtx(outer[i]).y < pt.y   
+                      && inTri(vtx(outer[ind]), pt, vtx(outer[i]), crxp) )
+                    i ]:
+              // candidates: vertices of outer which are inside
+              // the triangle [ pt, crxp, outer[ind+1] ]
+              [ (ind+1)%len(outer),
+                 for(i=[0:len(outer)-1]) 
+                  if( vtx(outer[i]).y > pt.y
+                      && inTri(vtx(outer[i]), pt, vtx(outer[in1]), crxp) )
+                   i ],
     minX = min([for(i=cand) vtx(outer[i]).x]) )
  [ for(c=cand) if( minX==vtx(outer[c]).x ) c ][0] ;
 
