@@ -37,35 +37,42 @@
 * The polyHoles arguments are:
 *   outer - the list of the outer polygon 2D vertices
 *   mH    - the list of the holes expressed as a list of 2D vertices
+*   pdata - boolean controlling the kind of the function output    
 * The other function arguments should not to be changed from their default 
 * values.
+* The function output is the keyhole polygon in one of two formats: 
+*   - a list of the polygon vertices when pdata==false
+*   - the same polygon in polyhedron data format, that is,
+*     a pair of the polygon list and a list with the only face of it.
 
 */
 
-function polyHoles(outer, mH, extrem=undef, n=0) =
+function polyHoles(outer, mH, pdata=true, extrem=undef, n=0) =
   extrem == undef ? 
-    polyHoles(outer, mH,  _extremes(mH), 0) :
+    polyHoles(outer, mH, pdata,  _extremes(mH), 0) :
     let( extr = extrem[n], // hole point with max. X
          hole = mH[extr[0]], 
          ipt  = extr[1],
          brdg = _bridge(hole[ipt], outer) ,
+         err  = assert(brdg!=undef, "Error: check input polygon restrictions"),
          l    = len(outer),
          lh   = len(hole),
          // the new polyg
          npoly = [ for(i=[brdg:brdg+l]) outer[i%l]  ,
                    for(i=[ipt:ipt+lh])  hole[i%lh] ])
     n==len(mH)-1? 
-      npoly : 
-      polyHoles(npoly, mH, extrem, n+1);          
+      pdata ?
+        [ npoly, [[for(i=[0:len(npoly)-1]) i]] ] :
+        npoly : 
+      polyHoles(npoly, mH, pdata, extrem, n+1);          
           
 // the vertex right extreme for each hole descendent sorted by x values
 function _extremes(l) =
   let( xvals = [for(i=[0:len(l)-1]) [for(j=[0:len(l[i])-1]) l[i][j].x ] ] )
-  cqsort( [for(i=[0:len(l)-1]) 
-              let( k=index_max(xvals[i]) ) 
+  qsort( [for(i=[0:len(l)-1], k=[index_max(xvals[i])] )
               [i, k, l[i][k].x] ],-2);
       
-// find a bridge between point pt ****
+// find a bridge between point pt
 // (in the interior of poly outer) and outer
 // return the index of a vertex in outer where the bridge ends
 function _bridge(pt, outer) =
@@ -73,28 +80,19 @@ function _bridge(pt, outer) =
        ind  = proj[0],
        crxp = proj[1],
        in1  = (ind+1)%len(outer) )
-  crxp == outer[ind] ? 
-    ind :
-  crxp == outer[in1] ?
-    in1 :
-    let( cand = (outer[ind].x > pt.x && 
-                   norm(crxp - outer[in1])
-                     >1e-6*norm(outer[ind]-outer[in1]))
-                 || (outer[in1].x <= pt.x ) ?
-                 // candidates: vertices of outer which are inside
-                 // the triangle [ pt, outer[ind], crxp ]
-                 [ ind, 
-                   for(i=[0:len(outer)-1]) 
-                    if( outer[i].y < pt.y   
-                        && inTri(outer[ind], pt, outer[i], crxp) )
-                      i ]:
-                // candidates: vertices of outer which are inside
-                // the triangle [ pt, crxp, outer[ind+1] ]
-                [ (ind+1)%len(outer),
-                   for(i=[0:len(outer)-1]) 
-                    if( outer[i].y > pt.y
-                        && inTri(outer[i], pt, outer[in1], crxp) )
-                     i ],
+  let( cand = (outer[ind].x > pt.x) || (outer[in1].x <= pt.x ) ?
+               // candidates: vertices of outer which are inside
+               // the triangle [ pt, outer[ind], crxp ]
+               [ ind, 
+                 for(i=[0:len(outer)-1]) 
+                  if( outer[i].y < pt.y && inTri(outer[ind], pt, outer[i], crxp) )
+                    i ]:
+              // candidates: vertices of outer which are inside
+              // the triangle [ pt, crxp, outer[ind+1] ]
+              [ (ind+1)%len(outer),
+                 for(i=[0:len(outer)-1]) 
+                  if( outer[i].y > pt.y && inTri(outer[i], pt, outer[in1], crxp) )
+                   i ],
     minX = min([for(i=cand) outer[i].x]) )
  [ for(c=cand) if( minX==outer[c].x ) c ][0] ;
 
@@ -104,9 +102,7 @@ function _bridge(pt, outer) =
 function _project(p, outer) =
   let(  l      = len(outer),
         crxs = [ for( i =[0:len(outer)-1], po1=[outer[i]], po2=[outer[(i+1)%l]] ) 
-                   if(( (po1.y<p.y) && (po2.y>=p.y) )
-                      //   ((po1.y<=p.y) && (po2.y>p.y) ) // possible but worst
-                        &&  is_CCW(p, po1, po2) )
+                   if(( (po1.y<p.y) && (po2.y>=p.y) ) &&  is_CCW(p, po1, po2) )
                       [i, _crxpt(p.y, outer[i], outer[(i+1)%l])] ],
         minX   = min([for(p=crxs) p[1].x]) )
   [for(crx=crxs) if(crx[1].x==minX) crx ][0];
@@ -127,22 +123,13 @@ function is_CCW(a, b, c) =
 // General purpose functions extracted from my lists.scad and used here
 
     function index_max(l) = search(max(l), l)[0];
-    // comparison quicksort
-    function cqsort(a,c="asc") =
+    // quicksort
+    function qsort(a,k=0) =
       len(a)<=1 ? a:
+      let( s = k<0? -1: 1, // k<0 => descending
+           k = floor(k) )
       let( a0 = a[floor(len(a)/2)],
-           l  = [for(ai=a) if(compare(ai,a0,c) <  0) ai],
-           e  = [for(ai=a) if(compare(ai,a0,c) == 0) ai],
-           g  = [for(ai=a) if(compare(ai,a0,c) >  0) ai] )
-      concat(cqsort(l,c),e,cqsort(g,c));
-    // comparison function example for cqsort
-    // may be overloaded by application
-    function compare(a0, a1, c) =
-      c=="asc"?  len(a0)==undef ? a0-a1 : a0[0]-a1[0] :
-      c=="desc"? len(a0)==undef ? a1-a0 : a1[0]-a0[0] :
-      c=="lex"?  a0[0]-a1[0]==0? a0[1]-a1[1] : a0[0]-a1[0] : // lexicographic
-      c==floor(c) && c>=0 && len(a0)>=0 ? a0[c]-a1[c] :      // by key ascendent
-      c==floor(c) && c<0  && len(a0)>=0 ? a1[-c]-a0[-c] :    // by key descendent
-      undef;
-
-
+           l  = [for(ai=a) if(s*(ai[abs(k)]-a0[abs(k)]) <  0) ai],
+           e  = [for(ai=a) if(s*(ai[abs(k)]-a0[abs(k)]) == 0) ai],
+           g  = [for(ai=a) if(s*(ai[abs(k)]-a0[abs(k)]) >  0) ai] )
+      concat(qsort(l,k),e,qsort(g,k));
