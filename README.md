@@ -18,10 +18,17 @@ It may not be optimal in the number of the parts for the given data.
 
 ## [polygonTriangulation.scad](polygonTriangulation.scad)
 
-This library contains three set of functions: the first set triangulates a
-simple 2D polygon; the second, tests if a 2D polygon is simple and
-the last one adjusts a best fit plane to a closed 3D polygonal and projects that 
-polygonal in the adjusted plane generating a 2D polygon (eventually not simple).
+Function triangulate() finds a triangulation by the ear-cut algorithm of a 
+polygon in a class a little bigger than the simple polygons.
+It generates, if possible, a list of triangles in the form of three 
+indices of the incoming vertices.  
+The vertices of the input polygon should pass the polyCheck() test
+to be accepted by triangulate(). Simple polygons and keyhole representation
+of polygons with holes always pass that check. If the input polygon doesn't 
+pass polyCheck, a wrong and incomplete triangulation may be output.
+The output list of triangles has length equal to the number of  
+incoming vertices minus 2. If the input polygon doesn't pass polyCheck 
+the function may return a shorter list and/or a wrong triangulation. 
 
 ## [polyHolePartition_Tests.scad](polyHolePartition_Tests.scad)
 
