@@ -25,9 +25,9 @@ indices of the incoming vertices.
 The vertices of the input polygon should pass the polyCheck() test
 to be accepted by triangulate(). Simple polygons and keyhole representation
 of polygons with holes always pass that check. If the input polygon doesn't 
-pass polyCheck, a wrong and incomplete triangulation may be output.
+pass polyCheck(), a wrong and incomplete triangulation may be output.
 The output list of triangles has length equal to the number of  
-incoming vertices minus 2. If the input polygon doesn't pass polyCheck 
+incoming vertices minus 2. If the input polygon doesn't pass polyCheck() 
 the function may return a shorter list and/or a wrong triangulation. 
 
 ## [polyHolePartition_Tests.scad](polyHolePartition_Tests.scad)
